@@ -1,0 +1,186 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Auction Result - Marketplace{% endblock %}
+
+{% block content %}
+
+<style>
+    .result-wrapper {
+        max-width: 750px;
+        margin: 35px auto;
+    }
+
+    .result-card {
+        background: white;
+        padding: 35px;
+        border-radius: 14px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+        text-align: center;
+    }
+
+    .result-icon {
+        font-size: 55px;
+        margin-bottom: 15px;
+    }
+
+    .result-card h1 {
+        color: #3157d5;
+        margin-top: 0;
+    }
+
+    .product-title {
+        color: #374151;
+        font-size: 22px;
+        margin: 20px 0;
+    }
+
+    .winner-box {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 12px;
+        padding: 25px;
+        margin-top: 25px;
+    }
+
+    .winner-box h2 {
+        color: #16834a;
+        margin-top: 0;
+    }
+
+    .winner-name {
+        font-size: 23px;
+        font-weight: bold;
+        color: #166534;
+    }
+
+    .winning-price {
+        font-size: 27px;
+        font-weight: bold;
+        color: #16834a;
+        margin: 15px 0;
+    }
+
+    .no-bids-box {
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 12px;
+        padding: 25px;
+        margin-top: 25px;
+        color: #9a3412;
+    }
+
+    .pending-box {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 12px;
+        padding: 25px;
+        margin-top: 25px;
+        color: #1e40af;
+    }
+
+    .result-detail {
+        color: #6b7280;
+        margin: 12px 0;
+    }
+
+    .action-button {
+        display: inline-block;
+        margin-top: 25px;
+        padding: 12px 24px;
+        background: #3157d5;
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+    }
+
+    .action-button:hover {
+        background: #2444b5;
+    }
+</style>
+
+<div class="result-wrapper">
+
+    <div class="result-card">
+
+        <div class="result-icon">
+            {% if not_finished %}
+                ⏳
+            {% elif winning_bid %}
+                🏆
+            {% else %}
+                📋
+            {% endif %}
+        </div>
+
+        <h1>Auction Result</h1>
+
+        <h2 class="product-title">
+            {{ auction.product.title }}
+        </h2>
+
+        {% if not_finished %}
+
+            <div class="pending-box">
+
+                <h2>Auction Is Still Active</h2>
+
+                <p>
+                    This auction has not ended yet.
+                </p>
+
+                <p class="result-detail">
+                    End Time: {{ auction.end_time }}
+                </p>
+
+            </div>
+
+        {% else %}
+
+            {% if winning_bid %}
+
+                <div class="winner-box">
+
+                    <h2>Auction Winner</h2>
+
+                    <p class="winner-name">
+                        {{ winning_bid.bidder.username }}
+                    </p>
+
+                    <p>Winning Bid</p>
+
+                    <div class="winning-price">
+                        {{ winning_bid.amount }}
+                    </div>
+
+                    <p class="result-detail">
+                        Bid Date: {{ winning_bid.created_at }}
+                    </p>
+
+                </div>
+
+            {% else %}
+
+                <div class="no-bids-box">
+
+                    <h2>No Winner</h2>
+
+                    <p>
+                        No bids were submitted for this auction.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        {% endif %}
+
+        <a href="{% url 'product_list' %}" class="action-button">
+            Back to Marketplace
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

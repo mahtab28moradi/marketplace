@@ -1,0 +1,178 @@
+
+
+{% extends 'base.html' %}
+
+{% block title %}
+My Purchases - Marketplace
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .page-heading {
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        margin: 35px 0 20px;
+        color: #263238;
+    }
+
+    .items-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 22px;
+    }
+
+    .purchase-card {
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+    }
+
+    .purchase-card h3 {
+        color: #3157d5;
+        margin-top: 0;
+    }
+
+    .purchase-card p {
+        margin: 12px 0;
+    }
+
+    .status {
+        display: inline-block;
+        background: #e8efff;
+        color: #3157d5;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+    }
+
+    .auction-link {
+        display: inline-block;
+        background: #3157d5;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 7px;
+        text-decoration: none;
+        margin-top: 12px;
+    }
+
+    .empty-message {
+        background: white;
+        padding: 22px;
+        border-radius: 10px;
+        color: #666;
+    }
+</style>
+
+<div class="page-heading">
+    <h1>My Purchases</h1>
+    <p>Track your orders and monitor your auction bids.</p>
+</div>
+
+<!-- MY ORDERS -->
+
+<h2 class="section-title">My Orders</h2>
+
+<div class="items-grid">
+
+    {% for order in orders %}
+
+        <div class="purchase-card">
+
+            <h3>{{ order.product.title }}</h3>
+
+            <p>
+                <strong>Seller:</strong>
+                {{ order.seller.username }}
+            </p>
+
+            <p>
+                <strong>Amount:</strong>
+                {{ order.amount }}
+            </p>
+
+            <p>
+                <strong>Order Date:</strong>
+                {{ order.created_at }}
+            </p>
+
+            <p>
+                <strong>Status:</strong>
+                <span class="status">
+                    {{ order.get_status_display }}
+                </span>
+            </p>
+
+        </div>
+
+    {% empty %}
+
+        <div class="empty-message">
+            You haven't purchased any products yet.
+        </div>
+
+    {% endfor %}
+
+</div>
+
+
+<!-- MY BIDS -->
+
+<h2 class="section-title">My Bids</h2>
+
+<div class="items-grid">
+
+    {% for bid in bids %}
+
+        <div class="purchase-card">
+
+            <h3>{{ bid.auction.product.title }}</h3>
+
+            <p>
+                <strong>Seller:</strong>
+                {{ bid.auction.product.seller.username }}
+            </p>
+
+            <p>
+                <strong>My Bid:</strong>
+                {{ bid.amount }}
+            </p>
+
+            <p>
+                <strong>Bid Date:</strong>
+                {{ bid.created_at }}
+            </p>
+
+            <p>
+                <strong>Auction Starting Price:</strong>
+                {{ bid.auction.starting_price }}
+            </p>
+
+            <p>
+                <strong>Auction End Time:</strong>
+                {{ bid.auction.end_time }}
+            </p>
+
+            <a
+                href="{% url 'auction_detail' bid.auction.id %}"
+                class="auction-link"
+            >
+                View Auction
+            </a>
+
+        </div>
+
+    {% empty %}
+
+        <div class="empty-message">
+            You haven't placed any bids yet.
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

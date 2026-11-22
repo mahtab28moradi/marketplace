@@ -1,0 +1,209 @@
+
+{% extends 'base.html' %}
+
+{% block title %}
+My Products - Marketplace
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .page-heading {
+        margin-bottom: 30px;
+    }
+
+    .products-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 22px;
+    }
+
+    .product-card {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+    }
+
+    .product-card h2 {
+        color: #3157d5;
+    }
+
+    .product-info p {
+        margin: 10px 0;
+    }
+
+    .auction-section {
+        background: #f5f7fb;
+        padding: 18px;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+
+    .bid-item {
+        background: white;
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+
+    .highest-bid {
+        color: #16834a;
+        font-weight: bold;
+    }
+
+    .details-link {
+        display: inline-block;
+        background: #3157d5;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 7px;
+        text-decoration: none;
+        margin-top: 12px;
+    }
+
+    .add-button {
+        display: inline-block;
+        background: #3157d5;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 7px;
+        text-decoration: none;
+        margin-bottom: 25px;
+    }
+
+    .empty-message {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+    }
+</style>
+
+<div class="page-heading">
+    <h1>My Products</h1>
+    <p>Manage your listed products and monitor your auctions.</p>
+</div>
+
+<a href="{% url 'product_create' %}" class="add-button">
+    + Add New Product
+</a>
+
+<div class="products-list">
+
+    {% for product in products %}
+
+        <div class="product-card">
+
+            <h2>{{ product.title }}</h2>
+
+            <div class="product-info">
+
+                <p><strong>Price:</strong> {{ product.price }}</p>
+
+                <p>
+                    <strong>Status:</strong>
+                    {{ product.get_status_display }}
+                </p>
+
+                <p>
+                    <strong>Sale Type:</strong>
+                    {{ product.get_sale_type_display }}
+                </p>
+
+            </div>
+
+            {% if product.sale_type == 'auction' %}
+
+                <div class="auction-section">
+
+                    <h3>Auction Information</h3>
+
+                    {% if product.auction %}
+
+                        <p>
+                            <strong>Auction Status:</strong>
+                            {{ product.auction.get_status_display }}
+                        </p>
+
+                        <p>
+                            <strong>Starting Price:</strong>
+                            {{ product.auction.starting_price }}
+                        </p>
+
+                        <p>
+                            <strong>Start Time:</strong>
+                            {{ product.auction.start_time }}
+                        </p>
+
+                        <p>
+                            <strong>End Time:</strong>
+                            {{ product.auction.end_time }}
+                        </p>
+
+                        <hr>
+
+                        <h4>Bids Received</h4>
+
+                        {% for bid in product.auction.bids.all %}
+
+                            <div class="bid-item">
+
+                                <p>
+                                    <strong>Bidder:</strong>
+                                    {{ bid.bidder.username }}
+                                </p>
+
+                                <p>
+                                    <strong>Bid Amount:</strong>
+                                    {{ bid.amount }}
+                                </p>
+
+                                <p>
+                                    <strong>Date:</strong>
+                                    {{ bid.created_at }}
+                                </p>
+
+                                {% if forloop.first %}
+                                    <p class="highest-bid">
+                                        Highest Bid
+                                    </p>
+                                {% endif %}
+
+                            </div>
+
+                        {% empty %}
+
+                            <p>No bids received yet.</p>
+
+                        {% endfor %}
+
+                        <a
+                            href="{% url 'auction_detail' product.auction.id %}"
+                            class="details-link"
+                        >
+                            View Auction
+                        </a>
+
+                    {% else %}
+
+                        <p>Auction information is not available.</p>
+
+                    {% endif %}
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    {% empty %}
+
+        <div class="empty-message">
+            <p>You haven't added any products yet.</p>
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,100 @@
+
+{% extends 'base.html' %}
+
+{% block title %}
+Home - Marketplace
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .hero {
+        background: linear-gradient(135deg, #3157d5, #7189ed);
+        color: white;
+        padding: 75px 35px;
+        border-radius: 16px;
+        text-align: center;
+    }
+
+    .hero h1 {
+        font-size: 42px;
+        margin-bottom: 18px;
+    }
+
+    .hero p {
+        font-size: 18px;
+        line-height: 1.7;
+    }
+
+    .hero-button {
+        display: inline-block;
+        background: white;
+        color: #3157d5;
+        padding: 13px 25px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 22px;
+        margin-top: 45px;
+    }
+
+    .feature-card {
+        background: white;
+        padding: 28px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.05);
+    }
+
+    .feature-card h3 {
+        color: #3157d5;
+    }
+</style>
+
+<section class="hero">
+
+    {% if user.is_authenticated %}
+        <h1>Welcome Back, {{ user.username }}!</h1>
+    {% else %}
+        <h1>Discover Your Next Great Find</h1>
+    {% endif %}
+
+    <p>
+        Buy and sell products easily.
+        Explore direct sales and exciting auctions
+        all in one marketplace.
+    </p>
+
+    <a href="{% url 'product_list' %}" class="hero-button">
+        Explore Marketplace
+    </a>
+
+</section>
+
+<section class="features">
+
+    <div class="feature-card">
+        <h3>Buy Products</h3>
+        <p>Discover products available for direct purchase.</p>
+    </div>
+
+    <div class="feature-card">
+        <h3>Join Auctions</h3>
+        <p>Place bids and compete to win interesting products.</p>
+    </div>
+
+    <div class="feature-card">
+        <h3>Sell Products</h3>
+        <p>List your products and reach potential buyers.</p>
+    </div>
+
+</section>
+
+{% endblock %}
+

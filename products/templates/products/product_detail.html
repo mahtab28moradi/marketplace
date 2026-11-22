@@ -1,0 +1,192 @@
+
+{% extends 'base.html' %}
+
+{% block title %}
+{{ product.title }} - Marketplace
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .detail-card {
+        background: white;
+        padding: 30px;
+        border-radius: 14px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 35px;
+    }
+
+    .product-image {
+        width: 100%;
+        max-height: 420px;
+        object-fit: contain;
+        border-radius: 10px;
+        background: #f5f7fb;
+    }
+
+    .product-info h1 {
+        color: #3157d5;
+        margin-top: 0;
+    }
+
+    .product-price {
+        font-size: 25px;
+        font-weight: bold;
+        color: #16834a;
+    }
+
+    .info-item {
+        margin: 16px 0;
+        line-height: 1.6;
+    }
+
+    .action-section {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .action-button {
+        display: inline-block;
+        background: #3157d5;
+        color: white;
+        border: none;
+        padding: 13px 24px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .action-button:hover {
+        background: #2444b5;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 25px;
+        color: #3157d5;
+        text-decoration: none;
+    }
+
+    @media (max-width: 700px) {
+        .detail-card {
+            grid-template-columns: 1fr;
+            padding: 20px;
+        }
+    }
+</style>
+
+<div class="detail-card">
+
+    <div>
+        {% if product.image %}
+            <img
+                src="{{ product.image.url }}"
+                alt="{{ product.title }}"
+                class="product-image"
+            >
+        {% else %}
+            <div class="product-image"></div>
+        {% endif %}
+    </div>
+
+    <div class="product-info">
+
+        <h1>{{ product.title }}</h1>
+
+        <p class="product-price">
+            {{ product.price }}
+        </p>
+
+        <p class="info-item">
+            <strong>Description:</strong><br>
+            {{ product.description }}
+        </p>
+
+        <p class="info-item">
+            <strong>Category:</strong>
+            {{ product.category.name }}
+        </p>
+
+        <p class="info-item">
+            <strong>Seller:</strong>
+            {{ product.seller.username }}
+        </p>
+
+        <p class="info-item">
+            <strong>Sale Type:</strong>
+            {{ product.get_sale_type_display }}
+        </p>
+
+        <div class="action-section">
+
+            {% if product.sale_type == 'direct' and product.status == 'active' %}
+
+                {% if user.is_authenticated %}
+
+                    {% if user != product.seller %}
+
+                        <form
+                            method="POST"
+                            action="{% url 'buy_product' product.id %}"
+                        >
+                            {% csrf_token %}
+
+                            <button type="submit" class="action-button">
+                                Buy Now
+                            </button>
+                        </form>
+
+                    {% else %}
+
+                        <p>This is your own product.</p>
+
+                    {% endif %}
+
+                {% else %}
+
+                    <p>
+                        Please
+                        <a href="{% url 'login' %}">login</a>
+                        to buy this product.
+                    </p>
+
+                {% endif %}
+
+            {% elif product.sale_type == 'auction' %}
+
+                {% if product.auction %}
+
+                    <a
+                        href="{% url 'auction_detail' product.auction.id %}"
+                        class="action-button"
+                    >
+                        View Auction and Place Bid
+                    </a>
+
+                {% else %}
+
+                    <p>Auction information is not available.</p>
+
+                {% endif %}
+
+            {% else %}
+
+                <p>This product is no longer available.</p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+<a href="{% url 'product_list' %}" class="back-link">
+    ← Back to Marketplace
+</a>
+
+{% endblock %}

@@ -1,0 +1,419 @@
+
+{% extends 'base.html' %}
+
+{% block title %}
+Auction - {{ auction.product.title }}
+{% endblock %}
+
+{% block content %}
+
+<style>
+    .auction-wrapper {
+        max-width: 1100px;
+        margin: 20px auto;
+    }
+
+    .auction-main {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        background: white;
+        padding: 28px;
+        border-radius: 14px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+    }
+
+    .auction-image {
+        width: 100%;
+        height: 350px;
+        object-fit: contain;
+        background: #f5f7fb;
+        border-radius: 10px;
+    }
+
+    .auction-info h1 {
+        color: #3157d5;
+        margin-top: 0;
+    }
+
+    .price-highlight {
+        font-size: 25px;
+        font-weight: bold;
+        color: #16834a;
+        margin: 12px 0;
+    }
+
+    .info-row {
+        margin: 13px 0;
+        line-height: 1.6;
+    }
+
+    .status-label {
+        display: inline-block;
+        padding: 6px 13px;
+        border-radius: 20px;
+        background: #eef2ff;
+        color: #3157d5;
+        font-weight: bold;
+    }
+
+    .countdown-card {
+        margin-top: 25px;
+        padding: 20px;
+        background: #f5f7ff;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .countdown-card h3 {
+        margin-top: 0;
+        color: #3157d5;
+    }
+
+    #auction-countdown {
+        font-size: 23px;
+        font-weight: bold;
+        color: #d14b35;
+    }
+
+    .bid-section,
+    .history-section {
+        background: white;
+        margin-top: 25px;
+        padding: 25px;
+        border-radius: 14px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+    }
+
+    .bid-section h2,
+    .history-section h2 {
+        color: #3157d5;
+        margin-top: 0;
+    }
+
+    .bid-input {
+        width: 100%;
+        max-width: 350px;
+        padding: 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        margin: 12px 0;
+        font-size: 15px;
+        box-sizing: border-box;
+    }
+
+    .action-button {
+        display: inline-block;
+        background: #3157d5;
+        color: white;
+        border: none;
+        padding: 12px 22px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .action-button:hover {
+        background: #2444b5;
+    }
+
+    .bid-item {
+        padding: 15px;
+        margin-bottom: 12px;
+        background: #f8f9fc;
+        border-radius: 9px;
+        border-left: 4px solid #3157d5;
+    }
+
+    .bid-item p {
+        margin: 6px 0;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 25px;
+        color: #3157d5;
+        text-decoration: none;
+    }
+
+    .notice {
+        padding: 13px;
+        background: #f5f7ff;
+        border-radius: 8px;
+        margin: 12px 0;
+    }
+
+    @media (max-width: 700px) {
+        .auction-main {
+            grid-template-columns: 1fr;
+            padding: 18px;
+        }
+
+        .auction-image {
+            height: 250px;
+        }
+    }
+</style>
+
+<div class="auction-wrapper">
+
+    <!-- Auction Product Details -->
+
+    <div class="auction-main">
+
+        <div>
+            {% if auction.product.image %}
+                <img
+                    src="{{ auction.product.image.url }}"
+                    alt="{{ auction.product.title }}"
+                    class="auction-image"
+                >
+            {% else %}
+                <div class="auction-image"></div>
+            {% endif %}
+        </div>
+
+        <div class="auction-info">
+
+            <h1>{{ auction.product.title }}</h1>
+
+            <p class="info-row">
+                {{ auction.product.description }}
+            </p>
+
+            <p class="info-row">
+                <strong>Seller:</strong>
+                {{ auction.product.seller.username }}
+            </p>
+
+            <p class="info-row">
+                <strong>Starting Price:</strong>
+                {{ auction.starting_price }}
+            </p>
+
+            <p class="price-highlight">
+                Current Highest Bid: {{ current_price }}
+            </p>
+
+            <p class="info-row">
+                <strong>Auction Status:</strong>
+                <span class="status-label">{{ display_status }}</span>
+            </p>
+
+            <p class="info-row">
+                <strong>Start Time:</strong>
+                {{ auction.start_time }}
+            </p>
+
+            <p class="info-row">
+                <strong>End Time:</strong>
+                {{ auction.end_time }}
+            </p>
+
+            <div class="countdown-card">
+                <h3>Auction Countdown</h3>
+
+                <div
+                    id="auction-countdown"
+                    data-start="{{ auction.start_time|date:'c' }}"
+                    data-end="{{ auction.end_time|date:'c' }}"
+                >
+                    Loading countdown...
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Place Bid -->
+
+    <div class="bid-section">
+
+        <h2>Place Your Bid</h2>
+
+        {% if now < auction.start_time %}
+
+            <p class="notice">
+                Auction has not started yet.
+            </p>
+
+        {% elif now >= auction.end_time %}
+
+            <p class="notice">
+                Auction has ended.
+            </p>
+
+        {% elif not user.is_authenticated %}
+
+            <p class="notice">
+                Please
+                <a href="{% url 'login' %}">login</a>
+                to place a bid.
+            </p>
+
+        {% elif user == auction.product.seller %}
+
+            <p class="notice">
+                You cannot bid on your own auction.
+            </p>
+
+        {% else %}
+
+            <form method="POST" action="{% url 'place_bid' auction.id %}">
+                {% csrf_token %}
+
+                <label for="bid-amount">
+                    Enter Your Bid Amount:
+                </label>
+
+                <br>
+
+                <input
+                    type="number"
+                    id="bid-amount"
+                    name="amount"
+                    step="0.01"
+                    min="0.01"
+                    required
+                    class="bid-input"
+                    placeholder="Enter amount"
+                >
+
+                <br>
+
+                <button type="submit" class="action-button">
+                    Submit Bid
+                </button>
+            </form>
+
+        {% endif %}
+
+    </div>
+
+    <!-- Bid History -->
+
+    <div class="history-section">
+
+        <h2>Bid History</h2>
+
+        {% for bid in bids %}
+
+            <div class="bid-item">
+
+                <p>
+                    <strong>Bidder:</strong>
+                    {{ bid.bidder.username }}
+                </p>
+
+                <p>
+                    <strong>Amount:</strong>
+                    {{ bid.amount }}
+                </p>
+
+                <p>
+                    <strong>Date:</strong>
+                    {{ bid.created_at }}
+                </p>
+
+            </div>
+
+        {% empty %}
+
+            <p>No bids have been submitted yet.</p>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- Auction Result -->
+
+    {% if now >= auction.end_time %}
+
+        <div class="bid-section">
+
+            <h2>Auction Completed</h2>
+
+            <a
+                href="{% url 'auction_result' auction.id %}"
+                class="action-button"
+            >
+                View Auction Result
+            </a>
+
+        </div>
+
+    {% endif %}
+
+    <a href="{% url 'product_list' %}" class="back-link">
+        ← Back to Marketplace
+    </a>
+
+</div>
+
+<!-- Countdown JavaScript -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const countdown = document.getElementById("auction-countdown");
+
+    if (!countdown) return;
+
+    const startTime = new Date(countdown.dataset.start).getTime();
+    const endTime = new Date(countdown.dataset.end).getTime();
+
+    let timer = null;
+
+    function updateCountdown() {
+
+        const currentTime = Date.now();
+
+        let targetTime;
+        let message;
+
+        if (currentTime < startTime) {
+
+            targetTime = startTime;
+            message = "Auction starts in: ";
+
+        } else if (currentTime < endTime) {
+
+            targetTime = endTime;
+            message = "Auction ends in: ";
+
+        } else {
+
+            countdown.textContent = "Auction has ended.";
+
+            if (timer !== null) {
+                clearInterval(timer);
+            }
+
+            return;
+        }
+
+        const distance = targetTime - currentTime;
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((distance / (1000 * 60)) % 60);
+        const seconds = Math.floor((distance / 1000) % 60);
+
+        countdown.textContent =
+            message +
+            days + "d " +
+            hours + "h " +
+            minutes + "m " +
+            seconds + "s";
+    }
+
+    updateCountdown();
+
+    timer = setInterval(updateCountdown, 1000);
+
+});
+</script>
+
+{% endblock %}

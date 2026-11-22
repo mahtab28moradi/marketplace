@@ -1,0 +1,223 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Create New Product - Marketplace{% endblock %}
+
+{% block content %}
+
+<style>
+    .form-wrapper {
+        max-width: 800px;
+        margin: 20px auto;
+    }
+
+    .form-card {
+        background: white;
+        padding: 30px;
+        border-radius: 14px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+    }
+
+    .form-card h1 {
+        color: #3157d5;
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+
+    .form-description {
+        color: #6b7280;
+        margin-bottom: 25px;
+    }
+
+    .form-section {
+        padding: 22px;
+        margin-top: 22px;
+        background: #f8f9fc;
+        border-radius: 10px;
+    }
+
+    .form-section h2 {
+        color: #3157d5;
+        margin-top: 0;
+        font-size: 20px;
+    }
+
+    .form-section p {
+        color: #6b7280;
+    }
+
+    .form-section p label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #374151;
+    }
+
+    .form-section input:not([type="checkbox"]):not([type="radio"]),
+    .form-section select,
+    .form-section textarea {
+        width: 100%;
+        padding: 11px;
+        border: 1px solid #d1d5db;
+        border-radius: 7px;
+        font-size: 14px;
+        box-sizing: border-box;
+        background: white;
+    }
+
+    .form-section input[type="file"] {
+        border: none;
+        padding: 8px 0;
+    }
+
+    .form-section textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .form-section .helptext {
+        display: block;
+        color: #6b7280;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+    .form-section ul.errorlist {
+        color: #dc2626;
+        padding-left: 20px;
+    }
+
+    .submit-button {
+        display: inline-block;
+        margin-top: 25px;
+        padding: 13px 28px;
+        background: #3157d5;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .submit-button:hover {
+        background: #2444b5;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 20px;
+        color: #3157d5;
+        text-decoration: none;
+    }
+
+    @media (max-width: 600px) {
+        .form-card {
+            padding: 18px;
+        }
+
+        .form-section {
+            padding: 16px;
+        }
+    }
+</style>
+
+<div class="form-wrapper">
+
+    <div class="form-card">
+
+        <h1>Create New Product</h1>
+
+        <p class="form-description">
+            Add your product to the marketplace and choose how you want to sell it.
+        </p>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Product Information -->
+
+            <div class="form-section">
+
+                <h2>Product Information</h2>
+
+                {{ form.as_p }}
+
+            </div>
+
+            <!-- Auction Information -->
+
+            <div class="form-section" id="auction-fields">
+
+                <h2>Auction Information</h2>
+
+                <p>
+                    Complete these fields if the product is being sold through auction.
+                </p>
+
+                {{ auction_form.as_p }}
+
+            </div>
+
+            <button type="submit" class="submit-button">
+                Save Product
+            </button>
+
+        </form>
+
+    </div>
+
+    <a href="{% url 'product_list' %}" class="back-link">
+        ← Back to Marketplace
+    </a>
+
+</div>
+
+<!-- Show or Hide Auction Fields -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const saleType = document.getElementById('id_sale_type');
+    const auctionFields = document.getElementById('auction-fields');
+
+    if (!saleType || !auctionFields) return;
+
+    function toggleAuctionFields() {
+
+        const isAuction = saleType.value === 'auction';
+
+        auctionFields.style.display = isAuction ? 'block' : 'none';
+
+        const inputs = auctionFields.querySelectorAll(
+            'input, select, textarea'
+        );
+
+        inputs.forEach(function(input) {
+
+            if (isAuction) {
+                input.required = input.dataset.wasRequired === 'true';
+            } else {
+                input.dataset.wasRequired = input.required;
+                input.required = false;
+            }
+
+        });
+    }
+
+    // Save original required state
+    auctionFields.querySelectorAll(
+        'input, select, textarea'
+    ).forEach(function(input) {
+        input.dataset.wasRequired = input.required;
+    });
+
+    saleType.addEventListener('change', toggleAuctionFields);
+
+    // Set visibility on page load
+    toggleAuctionFields();
+
+});
+</script>
+
+{% endblock %}
